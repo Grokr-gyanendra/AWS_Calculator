@@ -1,23 +1,29 @@
 pipeline {
-    agent any
-    
+    agent {
+        docker {
+            image 'python:3.8-slim'
+        }
+    }
     environment {
         AWS_DEFAULT_REGION = 'eu-north-1'
     }
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/Grokr-gyanendra/AWS_Calculator' 
+                git 'https://github.com/Grokr-gyanendra/AWS_Calculator'
             }
         }
         stage('Install Dependencies') {
             steps {
-                sh 'pip install -r requirements.txt'
+                sh '''
+                    python3 -m pip install --upgrade pip
+                    python3 -m pip install -r requirements.txt
+                '''
             }
         }
         stage('Test') {
             steps {
-                sh 'pytest tests/' 
+                sh 'pytest tests/'
             }
         }
         stage('Install SAM CLI') {
