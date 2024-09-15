@@ -1,8 +1,5 @@
 pipeline {
     agent any
-    tools{
-        python 'Python-3.9'
-    }
     
     environment {
         AWS_DEFAULT_REGION = 'eu-north-1'
