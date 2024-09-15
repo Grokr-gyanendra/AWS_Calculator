@@ -24,11 +24,11 @@ pipeline {
         stage('Install Dependencies') {
             steps {
                 script {
-                    // Install Python dependencies
+                    // Check if pip3 exists and install it without using sudo
                     sh '''
                         if ! command -v pip3 &> /dev/null; then
-                            sudo apt-get update
-                            sudo apt-get install -y python3-pip
+                            apt-get update &&
+                            apt-get install -y python3-pip
                         fi
                         python3 -m pip install --upgrade pip
                         python3 -m pip install -r requirements.txt
