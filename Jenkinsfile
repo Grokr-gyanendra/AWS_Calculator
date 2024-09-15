@@ -1,41 +1,48 @@
 pipeline {
     agent any
-    environment {
-        AWS_DEFAULT_REGION = 'eu-north-1'
+
+    parameters {
+        choice(name: 'DEPLOY_STAGE', choices: ['staging', 'production'], description: 'Select the deployment stage')
+        string(name: 'ARTIFACTS_BUCKET', defaultValue: 'my-artifacts-bucket', description: 'Enter the S3 bucket for artifacts')
+        string(name: 'ARTIFACTS_PREFIX', defaultValue: 'my-prefix', description: 'Enter the S3 prefix for artifacts')
     }
+
+    environment {
+        AWS_DEFAULT_REGION = 'us-east-1'
+        STACK_NAME         = "book-app-${params.DEPLOY_STAGE}"
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+    }
+
     stages {
-        stage('Checkout') {
+        stage('Unit Test') {
             steps {
-                git 'https://github.com/Grokr-gyanendra/AWS_Calculator'
+                script {
+                    sh "npm i -g recursive-install"
+                    sh "npm-recursive-install --rootDir=src"
+                    dir("src/books/create") {
+                        sh "npm test"
+                    }
+                    dir("src/books/get-all") {
+                        sh "npm test"
+                    }
+                }
             }
         }
-        stage('Run in Docker') {
+        
+        stage('Package Application') {
             steps {
-                sh '''
-                    docker run --rm -v $(pwd):/workspace -w /workspace python:3.8-slim /bin/bash -c "
-                    python3 -m pip install --upgrade pip &&
-                    python3 -m pip install -r requirements.txt &&
-                    pytest tests/"
-                '''
+                script {
+                        sh "sam build"
+                        sh "sam package --s3-bucket ${params.ARTIFACTS_BUCKET} --s3-prefix ${params.ARTIFACTS_PREFIX} --output-template-file template.yml"
+                }
             }
         }
-        stage('Install SAM CLI') {
-            steps {
-                sh '''
-                    docker run --rm -v $(pwd):/workspace -w /workspace python:3.8-slim /bin/bash -c "
-                    pip install aws-sam-cli"
-                '''
-            }
-        }
-        stage('Build') {
-            steps {
-                sh 'sam build'
-            }
-        }
+
         stage('Deploy') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_ACCESS_KEY_ID']]) {
-                    sh 'sam deploy --no-confirm-changeset --stack-name calculator-stack --capabilities CAPABILITY_IAM'
+                script {
+                        sh "sam deploy --template-file template.yml --stack-name $STACK_NAME --parameter-overrides ParameterKey=Stage,ParameterValue=${params.DEPLOY_STAGE} --capabilities CAPABILITY_IAM"
                 }
             }
         }
