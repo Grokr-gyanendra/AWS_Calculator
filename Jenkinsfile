@@ -11,6 +11,7 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
+                sh 'sudp apt-get install python3-pip'
                 sh 'python3 -m pip install -r requirements.txt'
             }
         }
