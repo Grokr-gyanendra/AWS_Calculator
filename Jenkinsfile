@@ -11,8 +11,12 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                sh 'sudo apt-get install python3-pip'
-                sh 'python3 -m pip install -r requirements.txt'
+                sh '''
+                    if ! command -v pip3 &> /dev/null; then
+                        apt-get update && apt-get install -y python3-pip
+                    fi
+                    python3 -m pip install -r requirements.txt
+                '''
             }
         }
         stage('Test') {
