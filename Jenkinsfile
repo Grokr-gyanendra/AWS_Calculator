@@ -1,9 +1,5 @@
 pipeline {
-    agent {
-        docker {
-            image 'python:3.8-slim'
-        }
-    }
+    agent any
     environment {
         AWS_DEFAULT_REGION = 'eu-north-1'
     }
@@ -13,22 +9,22 @@ pipeline {
                 git 'https://github.com/Grokr-gyanendra/AWS_Calculator'
             }
         }
-        stage('Install Dependencies') {
+        stage('Run in Docker') {
             steps {
                 sh '''
-                    python3 -m pip install --upgrade pip
-                    python3 -m pip install -r requirements.txt
+                    docker run --rm -v $(pwd):/workspace -w /workspace python:3.8-slim /bin/bash -c "
+                    python3 -m pip install --upgrade pip &&
+                    python3 -m pip install -r requirements.txt &&
+                    pytest tests/"
                 '''
-            }
-        }
-        stage('Test') {
-            steps {
-                sh 'pytest tests/'
             }
         }
         stage('Install SAM CLI') {
             steps {
-                sh 'pip install aws-sam-cli'
+                sh '''
+                    docker run --rm -v $(pwd):/workspace -w /workspace python:3.8-slim /bin/bash -c "
+                    pip install aws-sam-cli"
+                '''
             }
         }
         stage('Build') {
