@@ -1,7 +1,7 @@
 pipeline {
     agent any
     tools{
-        python 'Python-3.9
+        python 'Python-3.9'
     }
     
     environment {
