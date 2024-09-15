@@ -21,28 +21,15 @@ pipeline {
             }
         }
 
-        stage('Install Dependencies') {
+        stage('Run in Docker') {
             steps {
-                script {
-                    // Check if pip3 exists and install it without using sudo
-                    sh '''
-                        if ! command -v pip3 &> /dev/null; then
-                            apt-get update &&
-                            apt-get install -y python3-pip
-                        fi
-                        python3 -m pip install --upgrade pip
-                        python3 -m pip install -r requirements.txt
-                    '''
-                }
-            }
-        }
-
-        stage('Unit Test') {
-            steps {
-                script {
-                    // Run unit tests for the calculator
-                    sh 'pytest tests/calculator_test.py'
-                }
+                // Run all commands in a Python Docker container
+                sh '''
+                    docker run --rm -v $(pwd):/workspace -w /workspace python:3.8-slim /bin/bash -c "
+                    python3 -m pip install --upgrade pip &&
+                    python3 -m pip install -r requirements.txt &&
+                    pytest tests/"
+                '''
             }
         }
 
