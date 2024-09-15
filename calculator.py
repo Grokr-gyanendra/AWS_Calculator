@@ -1,7 +1,7 @@
 def add(x, y):
     return x + y
 
-def subtract(x, y):  # Fixed spelling from "substract" to "subtract"
+def subtract(x, y):  
     return x - y
 
 def multiply(x, y):

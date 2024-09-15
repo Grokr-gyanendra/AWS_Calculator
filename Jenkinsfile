@@ -1,12 +1,12 @@
 pipeline {
     agent any
     environment {
-        AWS_DEFAULT_REGION = 'us-east-1'
+        AWS_DEFAULT_REGION = 'eu-north-1'
     }
     stages {
         stage('Checkout') {
             steps {
-                git 'https://github.com/your-repo/calculator' 
+                git 'https://github.com/Grokr-gyanendra/AWS_Calculator' 
             }
         }
         stage('Install Dependencies') {
@@ -31,7 +31,7 @@ pipeline {
         }
         stage('Deploy') {
             steps {
-                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'aws-credentials-id']]) {
+                withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', credentialsId: 'AWS_ACCESS_KEY_ID']]) {
                     sh 'sam deploy --no-confirm-changeset --stack-name calculator-stack --capabilities CAPABILITY_IAM'
                 }
             }
