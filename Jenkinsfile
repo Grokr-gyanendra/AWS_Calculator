@@ -1,10 +1,9 @@
 pipeline {
-    agent{
-        docker{
-            image 'python:3.9'
-            args '-u root'
-        }
+    agent any
+    tools{
+        python 'Python-3.9
     }
+    
     environment {
         AWS_DEFAULT_REGION = 'eu-north-1'
     }
