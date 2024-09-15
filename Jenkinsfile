@@ -1,5 +1,10 @@
 pipeline {
-    agent any
+    agent{
+        docker{
+            image 'python:3.9'
+            args '-u root'
+        }
+    }
     environment {
         AWS_DEFAULT_REGION = 'eu-north-1'
     }
@@ -11,8 +16,7 @@ pipeline {
         }
         stage('Install Dependencies') {
             steps {
-                sh 'sudo apt-get install python3-pip -y'
-                sh 'python3 -m pip install -r requirements.txt'
+                sh 'pip install -r requirements.txt'
             }
         }
         stage('Test') {
