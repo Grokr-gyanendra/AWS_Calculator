@@ -3,8 +3,8 @@ pipeline {
     
     parameters {
         choice(name: 'DEPLOY_STAGE', choices: ['staging', 'production'], description: 'Select the deployment stage')
-        string(name: 'ARTIFACTS_BUCKET', defaultValue: 'my-artifacts-bucket', description: 'Enter the S3 bucket for artifacts')
-        string(name: 'ARTIFACTS_PREFIX', defaultValue: 'my-prefix', description: 'Enter the S3 prefix for artifacts')
+        string(name: 'ARTIFACTS_BUCKET', defaultValue: 'bkt232004', description: 'Enter the S3 bucket for artifacts')
+        string(name: 'ARTIFACTS_PREFIX', defaultValue: 'myapp', description: 'Enter the S3 prefix for artifacts')
     }
 
     environment {
@@ -21,15 +21,17 @@ pipeline {
             }
         }
 
-        stage('Run in Docker') {
+        stage('Install Dependencies') {
             steps {
-                // Run all commands in a Python Docker container
                 sh '''
-                    docker run --rm -v $(pwd):/workspace -w /workspace python:3.8-slim /bin/bash -c "
-                    python3 -m pip install --upgrade pip &&
-                    python3 -m pip install -r requirements.txt &&
-                    pytest tests/"
+                    python3 -m pip install --upgrade pip
+                    python3 -m pip install -r requirements.txt
                 '''
+            }
+        }
+        stage('Run Tests') {
+            steps {
+                sh 'pytest tests/'
             }
         }
 
